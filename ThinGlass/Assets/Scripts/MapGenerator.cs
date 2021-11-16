@@ -5,37 +5,45 @@ using UnityEngine;
 public class MapGenerator : MonoBehaviour
 {
     // Start is called before the first frame update
-    private int _width = 10;
-    private int _height = 10;
-    private GameObject[,] _arrOfPlanes;
-    private float _scaler = 0.15f;
-    private float _widthPlane;
-    private float _heightPlane;
+    public int width;
+    public int height;
     
+    public GameObject[,] ArrOfPlanes;
+    private float _scaler = 0.15f;
+    
+    [HideInInspector]
+    public float widthPlane;
+    [HideInInspector]
+    public float heightPlane;
+    public bool isInitialized;
     void Start()
     {
-        _arrOfPlanes = new GameObject[_width, _height];
+        width = 39;
+        height = 45;
+        ArrOfPlanes = new GameObject[width, height];
+        Debug.Log(width);
+        widthPlane = _getSizeOfPlane(1f, 1f)[0];
+        heightPlane = _getSizeOfPlane(1f, 1f)[1];
 
-        _widthPlane = _getSizeOfPlane(1f, 1f)[0];
-        _heightPlane = _getSizeOfPlane(1f, 1f)[1];
-
-        for (int i = 0; i < _width; i++)
-        for (int j = 0; j < _height; j++)
+        for (int i = 0; i < width; i++)
+        for (int j = 0; j < height; j++)
         {
             // Get the position of where should be the object
-            float positionX = i * _widthPlane;
-            float positionZ = j * _heightPlane;
+            float positionX = i * widthPlane;
+            float positionZ = j * heightPlane;
 
             float perlinNoiseValue = Mathf.PerlinNoise(positionX * _scaler, positionZ * _scaler);
 
             if (perlinNoiseValue > 0.3 + 0.1 * distance_squared(positionX, positionZ))
             {
-                _arrOfPlanes[i, j] = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                _arrOfPlanes[i, j].gameObject.transform.localScale = new Vector3(1, 1, 1);
-                _arrOfPlanes[i, j].gameObject.transform.SetParent(gameObject.transform);
-                _arrOfPlanes[i, j].gameObject.transform.position = new Vector3(positionX, 0, positionZ);
+                ArrOfPlanes[i, j] = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                ArrOfPlanes[i, j].gameObject.transform.localScale = new Vector3(1, 1, 1);
+                ArrOfPlanes[i, j].gameObject.transform.SetParent(gameObject.transform);
+                ArrOfPlanes[i, j].gameObject.transform.position = new Vector3(positionX, 0, positionZ);
             }
         }
+
+        isInitialized = true;
     }
 
     // Update is called once per frame
@@ -49,17 +57,17 @@ public class MapGenerator : MonoBehaviour
     {
         var aux = GameObject.CreatePrimitive(PrimitiveType.Plane);
         aux.transform.localScale = new Vector3(1, 1, 1);
-        float heightPlane = aux.GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
-        float widthPlane = aux.GetComponent<MeshFilter>().mesh.bounds.extents.x * 2;
+        float height = aux.GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
+        float width = aux.GetComponent<MeshFilter>().mesh.bounds.extents.x * 2;
         Destroy(aux);
-        return new[] {widthPlane, heightPlane};
+        return new[] {width, height};
     }
     
     // Get the distanced squared from the center, this function is used to make a map
     private float  distance_squared(float x, float y)
     {
-        float dx = 2 * x / (_width*_getSizeOfPlane(1f, 1f)[0]) - 1;
-        float dy = 2 * y / (_height*_getSizeOfPlane(1f, 1f)[1]) - 1;
+        float dx = 2 * x / (width*_getSizeOfPlane(1f, 1f)[0]) - 1;
+        float dy = 2 * y / (height*_getSizeOfPlane(1f, 1f)[1]) - 1;
         //at this point 0 <= dx <= 1 and 0 <= dy <= 1
         return dx * dx + dy * dy;
     }
