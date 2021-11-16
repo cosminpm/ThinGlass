@@ -15,7 +15,7 @@ public class ControllerPlayer : MonoBehaviour
         yield return new WaitUntil(() => _map.GetComponent<MapGenerator>().isInitialized);
         _scriptMap = _map.GetComponent<MapGenerator>();
         
-        int[] center = getCenter(_map);
+        int[] center = GetCenter(_map);
         gameObject.transform.position = 
             new Vector3(_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.z);
     }
@@ -26,35 +26,36 @@ public class ControllerPlayer : MonoBehaviour
         ControllerPLayer();
     }
 
-    void ControllerPLayer()
+    private void ControllerPLayer()
     {
         if (Input.GetKeyDown("up"))
         {
-            _actualPosition = new []{_actualPosition[0] - 1, _actualPosition[1]};
-            gameObject.transform.position =
-                new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+            BreakPanel(_actualPosition[0], _actualPosition[1]);
+            MoveCube(-1, 0);
+            CheckMovement(_actualPosition[0], _actualPosition[1]);
         }
         if (Input.GetKeyDown("down"))
         {
-            _actualPosition = new []{_actualPosition[0] + 1, _actualPosition[1]};
-            gameObject.transform.position =
-                new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+            BreakPanel(_actualPosition[0], _actualPosition[1]);
+            MoveCube(1, 0);
+            CheckMovement(_actualPosition[0], _actualPosition[1]);
         }
         if (Input.GetKeyDown("left"))
         {
-            _actualPosition = new []{_actualPosition[0], _actualPosition[1]-1};
-            gameObject.transform.position =
-                new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+            BreakPanel(_actualPosition[0], _actualPosition[1]);
+            MoveCube(0, -1);
+            CheckMovement(_actualPosition[0], _actualPosition[1]);
         }
         if (Input.GetKeyDown("right"))
         {
-            _actualPosition = new []{_actualPosition[0], _actualPosition[1]+1};
-            gameObject.transform.position =
-                new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+            
+            BreakPanel(_actualPosition[0], _actualPosition[1]);
+            MoveCube(0, 1);
+            CheckMovement(_actualPosition[0], _actualPosition[1]);
         }
     }
 
-    private int[] getCenter(GameObject map)
+    private int[] GetCenter(GameObject map)
     {
         MapGenerator scriptMap = map.GetComponent<MapGenerator>();
         int[] center = {scriptMap.height / 2, scriptMap.width / 2};
@@ -76,4 +77,26 @@ public class ControllerPlayer : MonoBehaviour
         }
         throw new Exception("No center found in the map created");
     }
+
+    private void BreakPanel(int i, int j)
+    {
+        _scriptMap.ArrOfPlanes[i,j].GetComponent<Renderer>().material.color = new Color(255, 0, 0); 
+    }
+
+    private void MoveCube(int x, int z)
+    {
+        _actualPosition = new []{_actualPosition[0] + x, _actualPosition[1] + z};
+        gameObject.transform.position =
+            new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 
+                5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+    }
+
+    private void CheckMovement(int x, int z)
+    {
+        if (_scriptMap.ArrOfPlanes[x, z].GetComponent<Renderer>().material.color.Equals(new Color(255, 0, 0)))
+        {
+            Debug.Log("HAS PISADO MAL");
+        }
+    }
+    
 }
