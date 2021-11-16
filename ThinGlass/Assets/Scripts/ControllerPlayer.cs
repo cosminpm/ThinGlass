@@ -7,22 +7,54 @@ public class ControllerPlayer : MonoBehaviour
 {
     // Start is called before the first frame update
     private GameObject _map;
-    
+    private MapGenerator _scriptMap;
+    private int[] _actualPosition;
     IEnumerator Start()
     {
         _map = GameObject.Find("Map");
         yield return new WaitUntil(() => _map.GetComponent<MapGenerator>().isInitialized);
-        gameObject.transform.position = new Vector3(getCenter(_map).x, 10,getCenter(_map).z);
+        _scriptMap = _map.GetComponent<MapGenerator>();
+        
+        int[] center = getCenter(_map);
+        gameObject.transform.position = 
+            new Vector3(_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.z);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        ControllerPLayer();
     }
 
+    void ControllerPLayer()
+    {
+        if (Input.GetKeyDown("up"))
+        {
+            _actualPosition = new []{_actualPosition[0] - 1, _actualPosition[1]};
+            gameObject.transform.position =
+                new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+        }
+        if (Input.GetKeyDown("down"))
+        {
+            _actualPosition = new []{_actualPosition[0] + 1, _actualPosition[1]};
+            gameObject.transform.position =
+                new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+        }
+        if (Input.GetKeyDown("left"))
+        {
+            _actualPosition = new []{_actualPosition[0], _actualPosition[1]-1};
+            gameObject.transform.position =
+                new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+        }
+        if (Input.GetKeyDown("right"))
+        {
+            _actualPosition = new []{_actualPosition[0], _actualPosition[1]+1};
+            gameObject.transform.position =
+                new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+        }
+    }
 
-    private Vector3 getCenter(GameObject map)
+    private int[] getCenter(GameObject map)
     {
         MapGenerator scriptMap = map.GetComponent<MapGenerator>();
         int[] center = {scriptMap.height / 2, scriptMap.width / 2};
@@ -34,7 +66,8 @@ public class ControllerPlayer : MonoBehaviour
             {
                 if (scriptMap.ArrOfPlanes[center[0], center[1]])
                 {
-                    return scriptMap.ArrOfPlanes[center[0], center[1]].transform.position;
+                    _actualPosition = center;
+                    return center;
                 }
                 center[0] = originalCenter[0] + j;
             }

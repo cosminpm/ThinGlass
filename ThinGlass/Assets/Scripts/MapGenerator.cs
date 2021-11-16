@@ -5,7 +5,9 @@ using UnityEngine;
 public class MapGenerator : MonoBehaviour
 {
     // Start is called before the first frame update
+    [HideInInspector]
     public int width;
+    [HideInInspector]
     public int height;
     
     public GameObject[,] ArrOfPlanes;
@@ -15,11 +17,13 @@ public class MapGenerator : MonoBehaviour
     public float widthPlane;
     [HideInInspector]
     public float heightPlane;
+    [HideInInspector]
     public bool isInitialized;
     void Start()
     {
-        width = 39;
-        height = 45;
+        width = 10;
+        height = 10;
+        
         ArrOfPlanes = new GameObject[width, height];
         Debug.Log(width);
         widthPlane = _getSizeOfPlane(1f, 1f)[0];
@@ -51,16 +55,20 @@ public class MapGenerator : MonoBehaviour
     {
         
     }
+
+    
+    
+    
     
     // Return the size of a plane given the scale of x and z
     private float[] _getSizeOfPlane(float x, float z)
     {
         var aux = GameObject.CreatePrimitive(PrimitiveType.Plane);
         aux.transform.localScale = new Vector3(1, 1, 1);
-        float height = aux.GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
-        float width = aux.GetComponent<MeshFilter>().mesh.bounds.extents.x * 2;
+        float heightAux = aux.GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
+        float widthAux = aux.GetComponent<MeshFilter>().mesh.bounds.extents.x * 2;
         Destroy(aux);
-        return new[] {width, height};
+        return new[] {widthAux, heightAux};
     }
     
     // Get the distanced squared from the center, this function is used to make a map
