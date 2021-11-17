@@ -51,7 +51,7 @@ public class MapGenerator : MonoBehaviour
                 ArrOfPlanes[i, j].gameObject.transform.position = new Vector3(positionX, 0, positionZ);
             }
         }
-
+        _generateExit();
         isInitialized = true;
     }
 
@@ -73,7 +73,7 @@ public class MapGenerator : MonoBehaviour
     }
     
     // Get the distanced squared from the center, this function is used to make a map
-    private float  distance_squared(float x, float y)
+    private float distance_squared(float x, float y)
     {
         float dx = 2 * x / (width*_getSizeOfPlane(1f, 1f)[0]) - 1;
         float dy = 2 * y / (height*_getSizeOfPlane(1f, 1f)[1]) - 1;
@@ -81,4 +81,28 @@ public class MapGenerator : MonoBehaviour
         return dx * dx + dy * dy;
     }
 
+    // For not overcomplicate the project and not implementing a A* algorithm we just check that the exit has 4 adjacent 
+    // white spaces, could be improved with a A* algorithm or even a solution that find the optimal path to go through all
+    // white boxes.
+    private void _generateExit()
+    {
+        int widthExit = Random.Range(2, width - 2);
+        int heightExit = Random.Range(2, height - 2);
+        Debug.Log(widthExit + " " + heightExit);
+        Debug.Log(ArrOfPlanes[widthExit - 1, heightExit]);
+        
+        
+        while (!ArrOfPlanes[widthExit + 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
+               !ArrOfPlanes[widthExit - 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
+               !ArrOfPlanes[widthExit, heightExit + 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
+               !ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)))
+        {
+            widthExit = Random.Range(2, width - 2);
+            heightExit = Random.Range(2, height - 2);
+        }
+
+        ArrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
+    }
+    
+    
 }

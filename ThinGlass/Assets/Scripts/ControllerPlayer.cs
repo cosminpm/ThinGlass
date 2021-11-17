@@ -1,14 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-
 public class ControllerPlayer : MonoBehaviour
 {
     // Start is called before the first frame update
     private GameObject _map;
     private MapGenerator _scriptMap;
     private int[] _actualPosition;
+    private int[] _startingPosition;
+    private List<int[]> _glassStepped;
     IEnumerator Start()
     {
         _map = GameObject.Find("Map");
@@ -18,6 +20,8 @@ public class ControllerPlayer : MonoBehaviour
         int[] center = GetCenter(_map);
         gameObject.transform.position = 
             new Vector3(_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.z);
+        _startingPosition = center;
+        _glassStepped = new List<int[]>();
     }
 
     // Update is called once per frame
@@ -30,31 +34,45 @@ public class ControllerPlayer : MonoBehaviour
     {
         if (Input.GetKeyDown("up"))
         {
-            BreakPanel(_actualPosition[0], _actualPosition[1]);
-            MoveCube(-1, 0);
-            CheckMovement(_actualPosition[0], _actualPosition[1]);
+           ActionsWhenMove(-1,0);
         }
         if (Input.GetKeyDown("down"))
         {
-            BreakPanel(_actualPosition[0], _actualPosition[1]);
-            MoveCube(1, 0);
-            CheckMovement(_actualPosition[0], _actualPosition[1]);
+            ActionsWhenMove(1,0 );
         }
         if (Input.GetKeyDown("left"))
         {
-            BreakPanel(_actualPosition[0], _actualPosition[1]);
-            MoveCube(0, -1);
-            CheckMovement(_actualPosition[0], _actualPosition[1]);
+            ActionsWhenMove(0, -1);
         }
         if (Input.GetKeyDown("right"))
         {
-            
-            BreakPanel(_actualPosition[0], _actualPosition[1]);
-            MoveCube(0, 1);
-            CheckMovement(_actualPosition[0], _actualPosition[1]);
+            ActionsWhenMove(0, 1);
         }
     }
 
+    private void ActionsWhenMove(int x, int z)
+    {
+        int[] previousMove = { _actualPosition[0], _actualPosition[1]};
+        if (!CheckMovement(_actualPosition[0] + x, _actualPosition[1] + z))
+        {
+            MoveCube(x, z);
+            BreakPanel(previousMove[0], previousMove[1]);
+            _glassStepped.Add(_actualPosition);
+        }
+        else
+        {
+            // Reset position when player steps incorrectly
+            gameObject.transform.position = new Vector3(_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.z);
+            _actualPosition = _startingPosition;
+            // Reset all the red boxes the player stepped into white
+            foreach (var pos in _glassStepped)
+            {
+                _scriptMap.ArrOfPlanes[pos[0],pos[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255); 
+            }
+            _glassStepped.Clear();
+        }
+    }
+    
     private int[] GetCenter(GameObject map)
     {
         MapGenerator scriptMap = map.GetComponent<MapGenerator>();
@@ -91,12 +109,30 @@ public class ControllerPlayer : MonoBehaviour
                 5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
     }
 
-    private void CheckMovement(int x, int z)
+    private bool CheckMovement(int x, int z)
     {
+        if (CheckOutsideMap(x, z))
+        {
+            Debug.Log("TE HAS SALIDO DEL MAPA");
+            return true;
+        }
         if (_scriptMap.ArrOfPlanes[x, z].GetComponent<Renderer>().material.color.Equals(new Color(255, 0, 0)))
         {
             Debug.Log("HAS PISADO MAL");
+            return true;
         }
+        return false;
+    }
+
+    private bool CheckOutsideMap(int x, int z)
+    {
+        Debug.Log(x + " "+ _scriptMap.width);
+        Debug.Log(z + " "+ _scriptMap.height);
+        if (x >= _scriptMap.width || x < 0 || z >= _scriptMap.height || z < 0)
+        {
+            return true;
+        }
+        return false;
     }
     
 }
