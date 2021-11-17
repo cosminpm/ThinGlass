@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 public class ControllerPlayer : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -11,6 +12,12 @@ public class ControllerPlayer : MonoBehaviour
     private int[] _actualPosition;
     private int[] _startingPosition;
     private List<int[]> _glassStepped;
+    public AudioSource moveSound;
+    public AudioSource dieSound;
+    public AudioSource winSound;
+    public Text scoreText;
+    private int _score = 0;
+    
     IEnumerator Start()
     {
         _map = GameObject.Find("Map");
@@ -22,6 +29,7 @@ public class ControllerPlayer : MonoBehaviour
             new Vector3(_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.z);
         _startingPosition = center;
         _glassStepped = new List<int[]>();
+        scoreText.text = _score.ToString();
     }
 
     // Update is called once per frame
@@ -53,20 +61,37 @@ public class ControllerPlayer : MonoBehaviour
     private void ActionsWhenMove(int x, int z)
     {
         int[] previousMove = { _actualPosition[0], _actualPosition[1]};
+        
+        if(!moveSound.isPlaying) {
+            moveSound.Play();
+        }
+        
+        
         if (!CheckMovement(_actualPosition[0] + x, _actualPosition[1] + z))
         {
             MoveCube(x, z);
+            
+            // If winner goes to exit and finishes
             if (CheckIfExit(_actualPosition[0], _actualPosition[1]))
             {
+                if(!winSound.isPlaying) {
+                    winSound.Play();
+                }
                 ResetMap();
                 return;
             }
             
             BreakPanel(previousMove[0], previousMove[1]);
+            _score += 1;
+            scoreText.text = _score.ToString();
             _glassStepped.Add(_actualPosition);
         }
+        // Player dies ups
         else
         {
+            if(!dieSound.isPlaying) {
+                dieSound.Play();
+            }
             ResetMap();
         }
     }
@@ -83,6 +108,8 @@ public class ControllerPlayer : MonoBehaviour
             _scriptMap.ArrOfPlanes[pos[0],pos[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255); 
         }
         _glassStepped.Clear();
+        _score = 0;
+        scoreText.text = _score.ToString();
     }
     
     
