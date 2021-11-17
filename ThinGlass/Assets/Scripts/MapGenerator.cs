@@ -17,6 +17,9 @@ public class MapGenerator : MonoBehaviour
     public float heightPlane;
     [HideInInspector]
     public bool isInitialized;
+    [HideInInspector]
+    public int[] exitCoor;
+    
     void Start()
     {
         ArrOfPlanes = new GameObject[width, height];
@@ -40,6 +43,7 @@ public class MapGenerator : MonoBehaviour
                 ArrOfPlanes[i, j].gameObject.transform.localScale = new Vector3(1, 1, 1);
                 ArrOfPlanes[i, j].gameObject.transform.SetParent(gameObject.transform);
                 ArrOfPlanes[i, j].gameObject.transform.position = new Vector3(positionX, 0, positionZ);
+                ArrOfPlanes[i, j].GetComponent<Renderer>().material.color = new Color(255, 255, 255); 
             }
             // The ones you cant touch, if you touch them you die
             else
@@ -100,7 +104,7 @@ public class MapGenerator : MonoBehaviour
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
         }
-
+        exitCoor = new[] {widthExit, heightExit}; 
         ArrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
     }
     

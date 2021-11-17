@@ -56,22 +56,35 @@ public class ControllerPlayer : MonoBehaviour
         if (!CheckMovement(_actualPosition[0] + x, _actualPosition[1] + z))
         {
             MoveCube(x, z);
+            if (CheckIfExit(_actualPosition[0], _actualPosition[1]))
+            {
+                ResetMap();
+                return;
+            }
+            
             BreakPanel(previousMove[0], previousMove[1]);
             _glassStepped.Add(_actualPosition);
         }
         else
         {
-            // Reset position when player steps incorrectly
-            gameObject.transform.position = new Vector3(_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.z);
-            _actualPosition = _startingPosition;
-            // Reset all the red boxes the player stepped into white
-            foreach (var pos in _glassStepped)
-            {
-                _scriptMap.ArrOfPlanes[pos[0],pos[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255); 
-            }
-            _glassStepped.Clear();
+            ResetMap();
         }
     }
+    
+    // Reset the map to its origina position
+    private void ResetMap()
+    {
+        // Reset position when player steps incorrectly
+        gameObject.transform.position = new Vector3(_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.z);
+        _actualPosition = _startingPosition;
+        // Reset all the red boxes the player stepped into white
+        foreach (var pos in _glassStepped)
+        {
+            _scriptMap.ArrOfPlanes[pos[0],pos[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255); 
+        }
+        _glassStepped.Clear();
+    }
+    
     
     private int[] GetCenter(GameObject map)
     {
@@ -113,12 +126,10 @@ public class ControllerPlayer : MonoBehaviour
     {
         if (CheckOutsideMap(x, z))
         {
-            Debug.Log("TE HAS SALIDO DEL MAPA");
             return true;
         }
         if (_scriptMap.ArrOfPlanes[x, z].GetComponent<Renderer>().material.color.Equals(new Color(255, 0, 0)))
         {
-            Debug.Log("HAS PISADO MAL");
             return true;
         }
         return false;
@@ -126,13 +137,18 @@ public class ControllerPlayer : MonoBehaviour
 
     private bool CheckOutsideMap(int x, int z)
     {
-        Debug.Log(x + " "+ _scriptMap.width);
-        Debug.Log(z + " "+ _scriptMap.height);
         if (x >= _scriptMap.width || x < 0 || z >= _scriptMap.height || z < 0)
         {
             return true;
         }
         return false;
     }
-    
+
+    // Check if the player arrived to the exit
+    private bool CheckIfExit(int x, int z)
+    {
+        if (x == _scriptMap.exitCoor[0] && z == _scriptMap.exitCoor[1])
+            return true;
+        return false;
+    }
 }
