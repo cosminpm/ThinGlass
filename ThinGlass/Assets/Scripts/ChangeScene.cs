@@ -7,6 +7,8 @@ public class ChangeScene : MonoBehaviour
 {
     public void ButtonChangeScene(string scene)
     {
+        Debug.Log("AAAA");
+        
         StartCoroutine(DelaySceneLoad(scene));
     }
 

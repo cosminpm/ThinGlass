@@ -28,6 +28,8 @@ public class MapGenerator : MonoBehaviour
     public int[] center;
     public int level;
     public Text levelText;
+    public int pointsNeeded;
+    public Text pointsNeededText;
     void Start()
     {
         GenerateMap();
@@ -36,6 +38,7 @@ public class MapGenerator : MonoBehaviour
         _scriptPlayer = GameObject.Find("Cube").GetComponent<ControllerPlayer>();
         mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         levelText.text = level.ToString();
+        pointsNeededText.text = pointsNeeded.ToString();
     }
 
     // Update is called once per frame
@@ -46,6 +49,7 @@ public class MapGenerator : MonoBehaviour
     
     public void GenerateMap()
     {
+        pointsNeeded = height * width / 3;
         ArrOfPlanes = new GameObject[width, height];
         widthPlane = _getSizeOfPlane(1f, 1f)[0];
         heightPlane = _getSizeOfPlane(1f, 1f)[1];
@@ -115,12 +119,15 @@ public class MapGenerator : MonoBehaviour
         while (!(ArrOfPlanes[widthExit + 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
                ArrOfPlanes[widthExit - 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
                ArrOfPlanes[widthExit, heightExit + 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)))&&
-               !(widthExit != center[0] && heightExit != center[1]))
+               ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255))&&
+               !(widthExit == center[0] && heightExit == center[1])))
         {
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
         }
+        Debug.Log(widthExit + " " + widthExit);
+        Debug.Log(center[0] + " " + center[1]);
+        
         exitCoor = new[] {widthExit, heightExit}; 
         ArrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
     }
@@ -136,21 +143,21 @@ public class MapGenerator : MonoBehaviour
     
     public int[] GetCenter()
     {
-        int[] center = {height / 2, width / 2};
-        int[] originalCenter = center;
+        int[] auxCenter = {height / 2, width / 2};
+        int[] originalCenter = auxCenter;
 
         for (int i = 0; i < width/2; i++)
         {
             for (int j = 0; j < height/2; j++)
             {
-                if (ArrOfPlanes[center[0], center[1]])
+                if (ArrOfPlanes[auxCenter[0], auxCenter[1]])
                 {
-                    return center;
+                    return auxCenter;
                 }
-                center[0] = originalCenter[0] + j;
+                auxCenter[0] = originalCenter[0] + j;
             }
-            center[0] = originalCenter[0];
-            center[1] = originalCenter[1] + i;
+            auxCenter[0] = originalCenter[0];
+            auxCenter[1] = originalCenter[1] + i;
         }
         throw new Exception("No center found in the map created");
     }
@@ -158,6 +165,7 @@ public class MapGenerator : MonoBehaviour
     
     public void GenerateNextLevel()
     {
+
         foreach (Transform panel in transform)
         {
             if (panel.name == "Plane")
@@ -169,6 +177,8 @@ public class MapGenerator : MonoBehaviour
         
         _scaler = Random.Range(0.01f, 0.99f);
         GenerateMap();
+        pointsNeeded = (height * width / 3) + _scriptPlayer.totalScore - 1;
+        pointsNeededText.text = pointsNeeded.ToString();
         var transform1 = mainCamera.transform;
         var position = transform1.position;
         position = new Vector3(position.x+5.5f, position.y + 100, position.z+6.5f);
@@ -176,6 +186,7 @@ public class MapGenerator : MonoBehaviour
         _scriptPlayer.ResetMap();
         level += 1;
         levelText.text = level.ToString();
+        
     }
     
 }

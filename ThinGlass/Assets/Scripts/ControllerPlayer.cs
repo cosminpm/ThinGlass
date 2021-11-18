@@ -25,7 +25,10 @@ public class ControllerPlayer : MonoBehaviour
     private int _hearthsAvailable;
     public Text youDiedText;
     public Button resetButton;
-    private int _totalScore;
+    public int totalScore;
+    
+    
+    
     IEnumerator Start()
     {
         _map = GameObject.Find("Map");
@@ -40,7 +43,7 @@ public class ControllerPlayer : MonoBehaviour
         // To initializate the blocks the player stepped on
         _glassStepped = new List<int[]>();
         // To write the 0 on the score
-        scoreText.text = _totalScore.ToString();
+        scoreText.text = totalScore.ToString();
         _hearthsAvailable = 3;
         youDiedText.enabled = false;
 
@@ -74,6 +77,9 @@ public class ControllerPlayer : MonoBehaviour
 
     private void ActionsWhenMove(int x, int z)
     {
+        Debug.Log("A: "+_scriptMap.pointsNeeded);
+        int aux = _score + totalScore;
+        Debug.Log("B: "+ aux);
         int[] previousMove = { _actualPosition[0], _actualPosition[1]};
         
         if(!moveSound.isPlaying) {
@@ -87,18 +93,33 @@ public class ControllerPlayer : MonoBehaviour
             // If winner goes to exit and finishes
             if (CheckIfExit(_actualPosition[0], _actualPosition[1]))
             {
-                if(!winSound.isPlaying) {
-                    winSound.Play();
+               
+                if (_score + totalScore >= _scriptMap.pointsNeeded)
+                {
+                    if(!winSound.isPlaying) {
+                        winSound.Play();
+                    }
+                    totalScore += _score;
+                    _scriptMap.GenerateNextLevel();
+                    return;
                 }
-                
-                _totalScore += _score;
-                _scriptMap.GenerateNextLevel();
-                return;
+                else
+                {
+                    // Player still has lives
+                    if (_hearthsAvailable > 0)
+                    {
+                        minusOneLife();
+                    }
+                    // Player has no lives left
+                    else
+                    {
+                        allLivesGone();
+                    }
+                }
             }
-            
             BreakPanel(previousMove[0], previousMove[1]);
             _score += 1;
-            int auxScore = _totalScore + _score;
+            int auxScore = totalScore + _score;
             scoreText.text = auxScore.ToString();
             _glassStepped.Add(_actualPosition);
         }
@@ -109,27 +130,38 @@ public class ControllerPlayer : MonoBehaviour
             // Player still has lives
             if (_hearthsAvailable > 0)
             {
-                ResetMap();
-                if(!dieSound.isPlaying) {
-                    dieSound.Play();
-                }
-                hearthsImages[_hearthsAvailable - 1].enabled = false;
-                _hearthsAvailable -= 1;
+                minusOneLife();
             }
             // Player has no lives left
             else
             {
-                if(!byebyeSound.isPlaying) {
-                    byebyeSound.Play();
-                }
-                youDiedText.enabled = true;
-                _map.SetActive(false);
-                gameObject.SetActive(false);
-                resetButton.gameObject.SetActive(false);
+                allLivesGone();
             }
             
         }
     }
+
+    private void minusOneLife()
+    {
+        ResetMap();
+        if(!dieSound.isPlaying) {
+            dieSound.Play();
+        }
+        hearthsImages[_hearthsAvailable - 1].enabled = false;
+        _hearthsAvailable -= 1;
+    }
+
+    private void allLivesGone()
+    {
+        if(!byebyeSound.isPlaying) {
+            byebyeSound.Play();
+        }
+        youDiedText.enabled = true;
+        _map.SetActive(false);
+        gameObject.SetActive(false);
+        resetButton.gameObject.SetActive(false);
+    }
+    
     
     // Reset the map to its origina position
     public void ResetMap()
@@ -144,7 +176,7 @@ public class ControllerPlayer : MonoBehaviour
         }
         _glassStepped.Clear();
         _score = 0;
-        scoreText.text = _totalScore.ToString();
+        scoreText.text = totalScore.ToString();
         
     }
     
