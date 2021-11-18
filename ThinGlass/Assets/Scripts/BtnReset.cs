@@ -13,10 +13,10 @@ public class BtnReset : MonoBehaviour
         GameObject _map = GameObject.Find("Map");
         MapGenerator _scriptMap = _map.GetComponent<MapGenerator>();
         
-        //_scriptPlayer.ResetMap();
         foreach (Transform panel in _map.transform)
         {
-            Destroy(panel.gameObject);
+            if (panel.name == "Plane")
+                Destroy(panel.gameObject);
         }
 
         _scriptMap._scaler = Random.Range(0.01f, 0.99f);

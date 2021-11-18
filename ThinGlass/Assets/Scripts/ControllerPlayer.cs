@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
+
 public class ControllerPlayer : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -30,10 +32,10 @@ public class ControllerPlayer : MonoBehaviour
         yield return new WaitUntil(() => _map.GetComponent<MapGenerator>().isInitialized);
         _scriptMap = _map.GetComponent<MapGenerator>();
         // To put the player in the middle of the map
-        int[] center = _scriptMap.GetCenter();
+        int[] center = _scriptMap.center;
         _actualPosition = center;
-        gameObject.transform.position = 
-            new Vector3(_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.z);
+        gameObject.transform.localPosition = 
+            new Vector3(_scriptMap.ArrOfPlanes[center[0],center[1]].transform.localPosition.x, 10,_scriptMap.ArrOfPlanes[center[0],center[1]].transform.localPosition.z);
         startingPosition = center;
         // To initializate the blocks the player stepped on
         _glassStepped = new List<int[]>();
@@ -88,7 +90,7 @@ public class ControllerPlayer : MonoBehaviour
                 if(!winSound.isPlaying) {
                     winSound.Play();
                 }
-                ResetMap();
+                _scriptMap.GenerateNextLevel();
                 return;
             }
             
@@ -130,7 +132,7 @@ public class ControllerPlayer : MonoBehaviour
     public void ResetMap()
     {
         // Reset position when player steps incorrectly
-        gameObject.transform.position = new Vector3(_scriptMap.ArrOfPlanes[startingPosition[0],startingPosition[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[startingPosition[0],startingPosition[1]].transform.position.z);
+        gameObject.transform.localPosition = new Vector3(_scriptMap.ArrOfPlanes[startingPosition[0],startingPosition[1]].transform.localPosition.x, 10,_scriptMap.ArrOfPlanes[startingPosition[0],startingPosition[1]].transform.localPosition.z);
         _actualPosition = startingPosition;
         // Reset all the red boxes the player stepped into white
         foreach (var pos in _glassStepped)
@@ -151,9 +153,9 @@ public class ControllerPlayer : MonoBehaviour
     private void MoveCube(int x, int z)
     {
         _actualPosition = new []{_actualPosition[0] + x, _actualPosition[1] + z};
-        gameObject.transform.position =
-            new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.x, 
-                5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.position.z);
+        gameObject.transform.localPosition =
+            new Vector3(_scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.localPosition.x, 
+                5, _scriptMap.ArrOfPlanes[_actualPosition[0], _actualPosition[1]].transform.localPosition.z);
     }
 
     private bool CheckMovement(int x, int z)
@@ -185,4 +187,7 @@ public class ControllerPlayer : MonoBehaviour
             return true;
         return false;
     }
+
+
+    
 }

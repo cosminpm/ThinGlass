@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class MapGenerator : MonoBehaviour
@@ -22,11 +23,19 @@ public class MapGenerator : MonoBehaviour
     public bool isInitialized;
     [HideInInspector]
     public int[] exitCoor;
-    
+    private ControllerPlayer _scriptPlayer;
+    private Camera mainCamera;
+    public int[] center;
+    public int level;
+    public Text levelText;
     void Start()
     {
         GenerateMap();
+        level = 0;
         isInitialized = true;
+        _scriptPlayer = GameObject.Find("Cube").GetComponent<ControllerPlayer>();
+        mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        levelText.text = level.ToString();
     }
 
     // Update is called once per frame
@@ -54,21 +63,23 @@ public class MapGenerator : MonoBehaviour
             if (perlinNoiseValue > 0.3 + 0.1 * distance_squared(positionX, positionZ))
             {
                 ArrOfPlanes[i, j] = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                ArrOfPlanes[i, j].gameObject.transform.localScale = new Vector3(1, 1, 1);
                 ArrOfPlanes[i, j].gameObject.transform.SetParent(gameObject.transform);
-                ArrOfPlanes[i, j].gameObject.transform.position = new Vector3(positionX, 0, positionZ);
+                ArrOfPlanes[i, j].gameObject.transform.localScale = new Vector3(1, 1, 1);
+                ArrOfPlanes[i, j].gameObject.transform.localPosition = new Vector3(positionX, 0, positionZ);
                 ArrOfPlanes[i, j].GetComponent<Renderer>().material.color = new Color(255, 255, 255); 
             }
             // The ones you cant touch, if you touch them you die
             else
             {
                 ArrOfPlanes[i, j] = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                ArrOfPlanes[i, j].gameObject.transform.localScale = new Vector3(1, 1, 1);
-                ArrOfPlanes[i, j].GetComponent<Renderer>().material.color = new Color(255, 0, 0); 
                 ArrOfPlanes[i, j].gameObject.transform.SetParent(gameObject.transform);
-                ArrOfPlanes[i, j].gameObject.transform.position = new Vector3(positionX, 0, positionZ);
+                ArrOfPlanes[i, j].gameObject.transform.localScale = new Vector3(1, 1, 1);
+                ArrOfPlanes[i, j].GetComponent<Renderer>().material.color = new Color(255, 0, 0);
+                ArrOfPlanes[i, j].gameObject.transform.localPosition = new Vector3(positionX, 0, positionZ);
             }
         }
+
+        center = GetCenter();
         ClearExitCells();
         _generateExit();
     }
@@ -104,7 +115,8 @@ public class MapGenerator : MonoBehaviour
         while (!(ArrOfPlanes[widthExit + 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
                ArrOfPlanes[widthExit - 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
                ArrOfPlanes[widthExit, heightExit + 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255))))
+               ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)))&&
+               !(widthExit != center[0] && heightExit != center[1]))
         {
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
@@ -115,8 +127,7 @@ public class MapGenerator : MonoBehaviour
 
     // Clears the four up, down, left, and right squares from the start position
     private void ClearExitCells()
-    {
-        int[] center = GetCenter();
+    { ;
         ArrOfPlanes[center[0] + 1, center[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
         ArrOfPlanes[center[0] - 1,center[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
         ArrOfPlanes[center[0], center[1] + 1].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
@@ -142,6 +153,29 @@ public class MapGenerator : MonoBehaviour
             center[1] = originalCenter[1] + i;
         }
         throw new Exception("No center found in the map created");
+    }
+    
+    
+    public void GenerateNextLevel()
+    {
+        foreach (Transform panel in transform)
+        {
+            if (panel.name == "Plane")
+                Destroy(panel.gameObject);
+        }
+        
+        height += 1;
+        width += 1;
+        
+        _scaler = Random.Range(0.01f, 0.99f);
+        GenerateMap();
+        var transform1 = mainCamera.transform;
+        var position = transform1.position;
+        position = new Vector3(position.x+5.5f, position.y + 100, position.z+6.5f);
+        transform1.position = position;
+        _scriptPlayer.ResetMap();
+        level += 1;
+        levelText.text = level.ToString();
     }
     
 }
