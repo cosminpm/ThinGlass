@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -9,7 +11,8 @@ public class MapGenerator : MonoBehaviour
     public int height;
     
     public GameObject[,] ArrOfPlanes;
-    private float _scaler = 0.15f;
+    [HideInInspector]
+    public float _scaler = 0.15f;
     
     [HideInInspector]
     public float widthPlane;
@@ -21,6 +24,18 @@ public class MapGenerator : MonoBehaviour
     public int[] exitCoor;
     
     void Start()
+    {
+        GenerateMap();
+        isInitialized = true;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+    
+    public void GenerateMap()
     {
         ArrOfPlanes = new GameObject[width, height];
         widthPlane = _getSizeOfPlane(1f, 1f)[0];
@@ -54,14 +69,8 @@ public class MapGenerator : MonoBehaviour
                 ArrOfPlanes[i, j].gameObject.transform.position = new Vector3(positionX, 0, positionZ);
             }
         }
+        ClearExitCells();
         _generateExit();
-        isInitialized = true;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
     
     // Return the size of a plane given the scale of x and z
@@ -92,10 +101,10 @@ public class MapGenerator : MonoBehaviour
         int widthExit = Random.Range(2, width - 2);
         int heightExit = Random.Range(2, height - 2);
         
-        while (!ArrOfPlanes[widthExit + 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               !ArrOfPlanes[widthExit - 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               !ArrOfPlanes[widthExit, heightExit + 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               !ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)))
+        while (!(ArrOfPlanes[widthExit + 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
+               ArrOfPlanes[widthExit - 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
+               ArrOfPlanes[widthExit, heightExit + 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
+               ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255))))
         {
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
@@ -103,6 +112,36 @@ public class MapGenerator : MonoBehaviour
         exitCoor = new[] {widthExit, heightExit}; 
         ArrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
     }
+
+    // Clears the four up, down, left, and right squares from the start position
+    private void ClearExitCells()
+    {
+        int[] center = GetCenter();
+        ArrOfPlanes[center[0] + 1, center[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
+        ArrOfPlanes[center[0] - 1,center[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
+        ArrOfPlanes[center[0], center[1] + 1].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
+        ArrOfPlanes[center[0], center[1] - 1].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
+    }
     
+    public int[] GetCenter()
+    {
+        int[] center = {height / 2, width / 2};
+        int[] originalCenter = center;
+
+        for (int i = 0; i < width/2; i++)
+        {
+            for (int j = 0; j < height/2; j++)
+            {
+                if (ArrOfPlanes[center[0], center[1]])
+                {
+                    return center;
+                }
+                center[0] = originalCenter[0] + j;
+            }
+            center[0] = originalCenter[0];
+            center[1] = originalCenter[1] + i;
+        }
+        throw new Exception("No center found in the map created");
+    }
     
 }

@@ -10,7 +10,8 @@ public class ControllerPlayer : MonoBehaviour
     private GameObject _map;
     private MapGenerator _scriptMap;
     private int[] _actualPosition;
-    private int[] _startingPosition;
+    [HideInInspector]
+    public int[] startingPosition;
     private List<int[]> _glassStepped;
     public AudioSource moveSound;
     public AudioSource dieSound;
@@ -21,6 +22,7 @@ public class ControllerPlayer : MonoBehaviour
     public List<RawImage> hearthsImages;
     private int _hearthsAvailable;
     public Text youDiedText;
+    public Button resetButton;
     
     IEnumerator Start()
     {
@@ -28,10 +30,11 @@ public class ControllerPlayer : MonoBehaviour
         yield return new WaitUntil(() => _map.GetComponent<MapGenerator>().isInitialized);
         _scriptMap = _map.GetComponent<MapGenerator>();
         // To put the player in the middle of the map
-        int[] center = GetCenter(_map);
+        int[] center = _scriptMap.GetCenter();
+        _actualPosition = center;
         gameObject.transform.position = 
             new Vector3(_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.z);
-        _startingPosition = center;
+        startingPosition = center;
         // To initializate the blocks the player stepped on
         _glassStepped = new List<int[]>();
         // To write the 0 on the score
@@ -117,6 +120,7 @@ public class ControllerPlayer : MonoBehaviour
                 youDiedText.enabled = true;
                 _map.SetActive(false);
                 gameObject.SetActive(false);
+                resetButton.gameObject.SetActive(false);
             }
             
         }
@@ -126,8 +130,8 @@ public class ControllerPlayer : MonoBehaviour
     public void ResetMap()
     {
         // Reset position when player steps incorrectly
-        gameObject.transform.position = new Vector3(_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.z);
-        _actualPosition = _startingPosition;
+        gameObject.transform.position = new Vector3(_scriptMap.ArrOfPlanes[startingPosition[0],startingPosition[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[startingPosition[0],startingPosition[1]].transform.position.z);
+        _actualPosition = startingPosition;
         // Reset all the red boxes the player stepped into white
         foreach (var pos in _glassStepped)
         {
@@ -136,32 +140,9 @@ public class ControllerPlayer : MonoBehaviour
         _glassStepped.Clear();
         _score = 0;
         scoreText.text = _score.ToString();
+        
     }
     
-    
-    private int[] GetCenter(GameObject map)
-    {
-        MapGenerator scriptMap = map.GetComponent<MapGenerator>();
-        int[] center = {scriptMap.height / 2, scriptMap.width / 2};
-        int[] originalCenter = center;
-
-        for (int i = 0; i < scriptMap.width/2; i++)
-        {
-            for (int j = 0; j < scriptMap.height/2; j++)
-            {
-                if (scriptMap.ArrOfPlanes[center[0], center[1]])
-                {
-                    _actualPosition = center;
-                    return center;
-                }
-                center[0] = originalCenter[0] + j;
-            }
-            center[0] = originalCenter[0];
-            center[1] = originalCenter[1] + i;
-        }
-        throw new Exception("No center found in the map created");
-    }
-
     private void BreakPanel(int i, int j)
     {
         _scriptMap.ArrOfPlanes[i,j].GetComponent<Renderer>().material.color = new Color(255, 0, 0); 

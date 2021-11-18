@@ -7,9 +7,21 @@ public class BtnReset : MonoBehaviour
 {
     public void ResetMap()
     {
-        GameObject _map = GameObject.Find("Cube");
-        ControllerPlayer _scriptMap = _map.GetComponent<ControllerPlayer>(); 
-        _scriptMap.ResetMap();
+        GameObject _controllerPlayer = GameObject.Find("Cube");
+        ControllerPlayer _scriptPlayer = _controllerPlayer.GetComponent<ControllerPlayer>();
+
+        GameObject _map = GameObject.Find("Map");
+        MapGenerator _scriptMap = _map.GetComponent<MapGenerator>();
+        
+        //_scriptPlayer.ResetMap();
+        foreach (Transform panel in _map.transform)
+        {
+            Destroy(panel.gameObject);
+        }
+
+        _scriptMap._scaler = Random.Range(0.01f, 0.99f);
+        _scriptMap.GenerateMap();
+        _scriptPlayer.ResetMap();
     }
     
 }
