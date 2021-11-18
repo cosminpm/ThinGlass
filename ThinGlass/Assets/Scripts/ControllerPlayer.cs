@@ -77,9 +77,6 @@ public class ControllerPlayer : MonoBehaviour
 
     private void ActionsWhenMove(int x, int z)
     {
-        Debug.Log("A: "+_scriptMap.pointsNeeded);
-        int aux = _score + totalScore;
-        Debug.Log("B: "+ aux);
         int[] previousMove = { _actualPosition[0], _actualPosition[1]};
         
         if(!moveSound.isPlaying) {

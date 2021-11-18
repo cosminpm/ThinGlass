@@ -22,6 +22,7 @@ public class BtnReset : MonoBehaviour
         _scriptMap._scaler = Random.Range(0.01f, 0.99f);
         _scriptMap.GenerateMap();
         _scriptPlayer.ResetMap();
+        _scriptMap._generateExit();
     }
     
 }

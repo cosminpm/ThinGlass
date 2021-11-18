@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -33,6 +34,7 @@ public class MapGenerator : MonoBehaviour
     void Start()
     {
         GenerateMap();
+        _generateExit();
         level = 0;
         isInitialized = true;
         _scriptPlayer = GameObject.Find("Cube").GetComponent<ControllerPlayer>();
@@ -85,7 +87,7 @@ public class MapGenerator : MonoBehaviour
 
         center = GetCenter();
         ClearExitCells();
-        _generateExit();
+        
     }
     
     // Return the size of a plane given the scale of x and z
@@ -111,21 +113,24 @@ public class MapGenerator : MonoBehaviour
     // For not overcomplicate the project and not implementing a A* algorithm we just check that the exit has 4 adjacent 
     // white spaces, could be improved with a A* algorithm or even a solution that find the optimal path to go through all
     // white boxes.
-    private void _generateExit()
+    public void _generateExit()
     {
+        
+        
         int widthExit = Random.Range(2, width - 2);
         int heightExit = Random.Range(2, height - 2);
         
         while (!(ArrOfPlanes[widthExit + 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
                ArrOfPlanes[widthExit - 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
                ArrOfPlanes[widthExit, heightExit + 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255))&&
-               !(widthExit == center[0] && heightExit == center[1])))
+               ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255))) &&
+               (widthExit != center[0] && heightExit != center[1]))
         {
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
+            
         }
-        Debug.Log(widthExit + " " + widthExit);
+        Debug.Log("A "+widthExit + " " + heightExit + " ");
         Debug.Log(center[0] + " " + center[1]);
         
         exitCoor = new[] {widthExit, heightExit}; 
@@ -186,6 +191,7 @@ public class MapGenerator : MonoBehaviour
         _scriptPlayer.ResetMap();
         level += 1;
         levelText.text = level.ToString();
+        _generateExit();
         
     }
     
