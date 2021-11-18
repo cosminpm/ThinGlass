@@ -25,7 +25,7 @@ public class ControllerPlayer : MonoBehaviour
     private int _hearthsAvailable;
     public Text youDiedText;
     public Button resetButton;
-    
+    private int _totalScore;
     IEnumerator Start()
     {
         _map = GameObject.Find("Map");
@@ -40,7 +40,7 @@ public class ControllerPlayer : MonoBehaviour
         // To initializate the blocks the player stepped on
         _glassStepped = new List<int[]>();
         // To write the 0 on the score
-        scoreText.text = _score.ToString();
+        scoreText.text = _totalScore.ToString();
         _hearthsAvailable = 3;
         youDiedText.enabled = false;
 
@@ -90,13 +90,16 @@ public class ControllerPlayer : MonoBehaviour
                 if(!winSound.isPlaying) {
                     winSound.Play();
                 }
+                
+                _totalScore += _score;
                 _scriptMap.GenerateNextLevel();
                 return;
             }
             
             BreakPanel(previousMove[0], previousMove[1]);
             _score += 1;
-            scoreText.text = _score.ToString();
+            int auxScore = _totalScore + _score;
+            scoreText.text = auxScore.ToString();
             _glassStepped.Add(_actualPosition);
         }
         // Player dies "Ups"
@@ -141,7 +144,7 @@ public class ControllerPlayer : MonoBehaviour
         }
         _glassStepped.Clear();
         _score = 0;
-        scoreText.text = _score.ToString();
+        scoreText.text = _totalScore.ToString();
         
     }
     
