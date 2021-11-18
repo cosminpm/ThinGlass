@@ -15,10 +15,13 @@ public class ControllerPlayer : MonoBehaviour
     public AudioSource moveSound;
     public AudioSource dieSound;
     public AudioSource winSound;
+    public AudioSource byebyeSound;
     public Text scoreText;
     private int _score = 0;
     public List<RawImage> hearthsImages;
     private int _hearthsAvailable;
+    public Text youDiedText;
+    
     IEnumerator Start()
     {
         _map = GameObject.Find("Map");
@@ -34,7 +37,8 @@ public class ControllerPlayer : MonoBehaviour
         // To write the 0 on the score
         scoreText.text = _score.ToString();
         _hearthsAvailable = 3;
-        
+        youDiedText.enabled = false;
+
     }
 
     // Update is called once per frame
@@ -93,21 +97,33 @@ public class ControllerPlayer : MonoBehaviour
         // Player dies "Ups"
         else
         {
-            if(!dieSound.isPlaying) {
-                dieSound.Play();
-            }
-
+           
+            // Player still has lives
             if (_hearthsAvailable > 0)
             {
+                ResetMap();
+                if(!dieSound.isPlaying) {
+                    dieSound.Play();
+                }
                 hearthsImages[_hearthsAvailable - 1].enabled = false;
                 _hearthsAvailable -= 1;
             }
-            ResetMap();
+            // Player has no lives left
+            else
+            {
+                if(!byebyeSound.isPlaying) {
+                    byebyeSound.Play();
+                }
+                youDiedText.enabled = true;
+                _map.SetActive(false);
+                gameObject.SetActive(false);
+            }
+            
         }
     }
     
     // Reset the map to its origina position
-    private void ResetMap()
+    public void ResetMap()
     {
         // Reset position when player steps incorrectly
         gameObject.transform.position = new Vector3(_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[_startingPosition[0],_startingPosition[1]].transform.position.z);
