@@ -17,19 +17,24 @@ public class ControllerPlayer : MonoBehaviour
     public AudioSource winSound;
     public Text scoreText;
     private int _score = 0;
-    
+    public List<RawImage> hearthsImages;
+    private int _hearthsAvailable;
     IEnumerator Start()
     {
         _map = GameObject.Find("Map");
         yield return new WaitUntil(() => _map.GetComponent<MapGenerator>().isInitialized);
         _scriptMap = _map.GetComponent<MapGenerator>();
-        
+        // To put the player in the middle of the map
         int[] center = GetCenter(_map);
         gameObject.transform.position = 
             new Vector3(_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.x, 10,_scriptMap.ArrOfPlanes[center[0],center[1]].transform.position.z);
         _startingPosition = center;
+        // To initializate the blocks the player stepped on
         _glassStepped = new List<int[]>();
+        // To write the 0 on the score
         scoreText.text = _score.ToString();
+        _hearthsAvailable = 3;
+        
     }
 
     // Update is called once per frame
@@ -66,7 +71,6 @@ public class ControllerPlayer : MonoBehaviour
             moveSound.Play();
         }
         
-        
         if (!CheckMovement(_actualPosition[0] + x, _actualPosition[1] + z))
         {
             MoveCube(x, z);
@@ -86,11 +90,17 @@ public class ControllerPlayer : MonoBehaviour
             scoreText.text = _score.ToString();
             _glassStepped.Add(_actualPosition);
         }
-        // Player dies ups
+        // Player dies "Ups"
         else
         {
             if(!dieSound.isPlaying) {
                 dieSound.Play();
+            }
+
+            if (_hearthsAvailable > 0)
+            {
+                hearthsImages[_hearthsAvailable - 1].enabled = false;
+                _hearthsAvailable -= 1;
             }
             ResetMap();
         }

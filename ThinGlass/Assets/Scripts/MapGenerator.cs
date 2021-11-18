@@ -23,7 +23,6 @@ public class MapGenerator : MonoBehaviour
     void Start()
     {
         ArrOfPlanes = new GameObject[width, height];
-        Debug.Log(width);
         widthPlane = _getSizeOfPlane(1f, 1f)[0];
         heightPlane = _getSizeOfPlane(1f, 1f)[1];
 
@@ -92,9 +91,6 @@ public class MapGenerator : MonoBehaviour
     {
         int widthExit = Random.Range(2, width - 2);
         int heightExit = Random.Range(2, height - 2);
-        Debug.Log(widthExit + " " + heightExit);
-        Debug.Log(ArrOfPlanes[widthExit - 1, heightExit]);
-        
         
         while (!ArrOfPlanes[widthExit + 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
                !ArrOfPlanes[widthExit - 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
