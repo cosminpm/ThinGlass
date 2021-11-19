@@ -115,24 +115,23 @@ public class MapGenerator : MonoBehaviour
     // white boxes.
     public void _generateExit()
     {
-        
-        
         int widthExit = Random.Range(2, width - 2);
         int heightExit = Random.Range(2, height - 2);
         
-        while (!(ArrOfPlanes[widthExit + 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               ArrOfPlanes[widthExit - 1, heightExit].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               ArrOfPlanes[widthExit, heightExit + 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255)) &&
-               ArrOfPlanes[widthExit, heightExit - 1].GetComponent<Renderer>().material.color.Equals(new Color(255, 255, 255))) &&
-               (widthExit != center[0] && heightExit != center[1]))
+        while ((widthExit == center[0] && heightExit == center[1]) || 
+               (widthExit == center[0] + 1 && heightExit == center[1]) ||
+               (widthExit == center[0] - 1 && heightExit == center[1]) || 
+               (widthExit == center[0] && heightExit == center[1] + 1) || 
+               (widthExit == center[0] && heightExit == center[1] - 1))
         {
+            Debug.Log(center[0] + " " + center[1]);
+            Debug.Log("");
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
-            
         }
         Debug.Log("A "+widthExit + " " + heightExit + " ");
         Debug.Log(center[0] + " " + center[1]);
-        
+        Debug.Log(center[0] == widthExit && center[1] == heightExit );
         exitCoor = new[] {widthExit, heightExit}; 
         ArrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
     }
