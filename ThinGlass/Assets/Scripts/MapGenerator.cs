@@ -14,7 +14,7 @@ public class MapGenerator : MonoBehaviour
     
     public GameObject[,] ArrOfPlanes;
     [HideInInspector]
-    public float _scaler = 0.15f;
+    public float scaler = 0.15f;
     
     [HideInInspector]
     public float widthPlane;
@@ -25,7 +25,7 @@ public class MapGenerator : MonoBehaviour
     [HideInInspector]
     public int[] exitCoor;
     private ControllerPlayer _scriptPlayer;
-    private Camera mainCamera;
+    private Camera _mainCamera;
     public int[] center;
     public int level;
     public Text levelText;
@@ -33,19 +33,20 @@ public class MapGenerator : MonoBehaviour
     public Text pointsNeededText;
     public GameObject hearthObject;
     
-    private List<GameObject> _livesObjects;
+    public List<GameObject> livesObjects;
     public List<int[]> PositionHearths;
     
     void Start()
     {
-        _livesObjects = new List<GameObject>();
+        PositionHearths = new List<int[]>();
+        livesObjects = new List<GameObject>();
         
         GenerateMap();
         _generateExit();
         level = 0;
         isInitialized = true;
         _scriptPlayer = GameObject.Find("Cube").GetComponent<ControllerPlayer>();
-        mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
+        _mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         levelText.text = level.ToString();
         pointsNeededText.text = pointsNeeded.ToString();
         
@@ -59,7 +60,7 @@ public class MapGenerator : MonoBehaviour
 
     private void _rotateHearth()
     {
-        foreach (var h in _livesObjects)
+        foreach (var h in livesObjects)
         {
             h.transform.Rotate(0, Time.deltaTime * 100f, 0, Space.Self);
         }
@@ -80,7 +81,7 @@ public class MapGenerator : MonoBehaviour
             float positionX = i * widthPlane;
             float positionZ = j * heightPlane;
 
-            float perlinNoiseValue = Mathf.PerlinNoise(positionX * _scaler, positionZ * _scaler);
+            float perlinNoiseValue = Mathf.PerlinNoise(positionX * scaler, positionZ * scaler);
 
             // The ones you can touch
             if (perlinNoiseValue > 0.3 + 0.1 * distance_squared(positionX, positionZ))
@@ -193,11 +194,11 @@ public class MapGenerator : MonoBehaviour
         height += 1;
         width += 1;
         
-        _scaler = Random.Range(0.01f, 0.99f);
+        scaler = Random.Range(0.01f, 0.99f);
         GenerateMap();
         pointsNeeded = (height * width / 3) + _scriptPlayer.totalScore - 1;
         pointsNeededText.text = pointsNeeded.ToString();
-        var transform1 = mainCamera.transform;
+        var transform1 = _mainCamera.transform;
         var position = transform1.position;
         position = new Vector3(position.x+5.5f, position.y + 100, position.z+6.5f);
         transform1.position = position;
@@ -235,7 +236,7 @@ public class MapGenerator : MonoBehaviour
             hearth.transform.localScale = new Vector3(175f, 175f, 175f);
             
             PositionHearths.Add(new []{widthValue, heightValue});
-            _livesObjects.Add(hearth);
+            livesObjects.Add(hearth);
         }
     }
 }

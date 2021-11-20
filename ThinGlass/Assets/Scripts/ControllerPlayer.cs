@@ -87,6 +87,8 @@ public class ControllerPlayer : MonoBehaviour
         {
             MoveCube(x, z);
             
+            
+            _getHearth(x, z);
             // If winner goes to exit and finishes
             if (CheckIfExit(_actualPosition[0], _actualPosition[1]))
             {
@@ -110,7 +112,7 @@ public class ControllerPlayer : MonoBehaviour
                     // Player has no lives left
                     else
                     {
-                        allLivesGone();
+                        AllLivesGone();
                     }
                 }
             }
@@ -132,7 +134,7 @@ public class ControllerPlayer : MonoBehaviour
             // Player has no lives left
             else
             {
-                allLivesGone();
+                AllLivesGone();
             }
             
         }
@@ -148,7 +150,7 @@ public class ControllerPlayer : MonoBehaviour
         _hearthsAvailable -= 1;
     }
 
-    private void allLivesGone()
+    private void AllLivesGone()
     {
         if(!byebyeSound.isPlaying) {
             byebyeSound.Play();
@@ -220,6 +222,31 @@ public class ControllerPlayer : MonoBehaviour
         return false;
     }
 
-
+    private void _getHearth(int x, int z)
+    {
+        int index = 0;
+       
+        foreach (var pos in _scriptMap.PositionHearths)
+        {
+            Debug.Log("A: "+ pos[0] + " " + x);
+            Debug.Log(pos[1] + " " + z);
+            if (pos[0] == x && pos[1] == z)
+            {
+                
+                if (_hearthsAvailable < 3)
+                {
+                    _hearthsAvailable += 1;
+                    hearthsImages[_hearthsAvailable - 1].enabled = true;
+                }
+                else
+                {
+                    _score += 10;
+                }
+                _scriptMap.livesObjects[index].SetActive(false);
+                
+            }
+            index += 1;
+        }
+    }
     
 }
