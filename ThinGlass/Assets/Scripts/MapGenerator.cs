@@ -31,6 +31,8 @@ public class MapGenerator : MonoBehaviour
     public Text levelText;
     public int pointsNeeded;
     public Text pointsNeededText;
+    public GameObject hearthObject;
+    private List<GameObject> _livesObjects;
     void Start()
     {
         GenerateMap();
@@ -41,6 +43,7 @@ public class MapGenerator : MonoBehaviour
         mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         levelText.text = level.ToString();
         pointsNeededText.text = pointsNeeded.ToString();
+        _livesObjects = new List<GameObject>();
     }
 
     // Update is called once per frame
@@ -48,6 +51,12 @@ public class MapGenerator : MonoBehaviour
     {
         
     }
+
+    private void rotateHearth()
+    {
+        transform.Rotate(0, 10, 0);
+    }
+    
     
     public void GenerateMap()
     {
@@ -87,7 +96,9 @@ public class MapGenerator : MonoBehaviour
 
         center = GetCenter();
         ClearExitCells();
+        generateExtraLife();
         
+
     }
     
     // Return the size of a plane given the scale of x and z
@@ -124,14 +135,9 @@ public class MapGenerator : MonoBehaviour
                (widthExit == center[0] && heightExit == center[1] + 1) || 
                (widthExit == center[0] && heightExit == center[1] - 1))
         {
-            Debug.Log(center[0] + " " + center[1]);
-            Debug.Log("");
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
         }
-        Debug.Log("A "+widthExit + " " + heightExit + " ");
-        Debug.Log(center[0] + " " + center[1]);
-        Debug.Log(center[0] == widthExit && center[1] == heightExit );
         exitCoor = new[] {widthExit, heightExit}; 
         ArrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
     }
@@ -191,7 +197,36 @@ public class MapGenerator : MonoBehaviour
         level += 1;
         levelText.text = level.ToString();
         _generateExit();
+    }
+
+
+
+    private void generateExtraLife()
+    {
+        int probHearth = Random.Range(1, 100);
+        int minimum = 0;
+
+        if (probHearth >= minimum)
+        {
+            int widthValue = Random.Range(2, width - 2);
+            int heightValue = Random.Range(2, height - 2);
+        
+            while ((widthValue == center[0] && heightValue == center[1]) || 
+                   (widthValue == center[0] + 1 && heightValue == center[1]) ||
+                   (widthValue == center[0] - 1 && heightValue == center[1]) || 
+                   (widthValue == center[0] && heightValue == center[1] + 1) || 
+                   (widthValue == center[0] && heightValue == center[1] - 1) &&
+                    ArrOfPlanes[widthValue, heightValue].GetComponent<Renderer>().material.color.Equals(new Color(255,255,255)))
+            {
+                widthValue = Random.Range(2, width - 2);
+                heightValue = Random.Range(2, height - 2);
+            }
+            
+            GameObject hearth = Instantiate(hearthObject, new Vector3(ArrOfPlanes[widthValue, heightValue].transform.position.x,
+                10,ArrOfPlanes[widthValue,heightValue].transform.position.z), hearthObject.transform.rotation);
+            hearth.transform.localScale = new Vector3(175f, 175f, 175f);
+            _livesObjects.Add(hearth);
+        }
         
     }
-    
 }
