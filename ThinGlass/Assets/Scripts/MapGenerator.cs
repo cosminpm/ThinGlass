@@ -32,9 +32,14 @@ public class MapGenerator : MonoBehaviour
     public int pointsNeeded;
     public Text pointsNeededText;
     public GameObject hearthObject;
+    
     private List<GameObject> _livesObjects;
+    public List<int[]> PositionHearths;
+    
     void Start()
     {
+        _livesObjects = new List<GameObject>();
+        
         GenerateMap();
         _generateExit();
         level = 0;
@@ -43,18 +48,21 @@ public class MapGenerator : MonoBehaviour
         mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         levelText.text = level.ToString();
         pointsNeededText.text = pointsNeeded.ToString();
-        _livesObjects = new List<GameObject>();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        _rotateHearth();
     }
 
-    private void rotateHearth()
+    private void _rotateHearth()
     {
-        transform.Rotate(0, 10, 0);
+        foreach (var h in _livesObjects)
+        {
+            h.transform.Rotate(0, Time.deltaTime * 100f, 0, Space.Self);
+        }
     }
     
     
@@ -96,7 +104,7 @@ public class MapGenerator : MonoBehaviour
 
         center = GetCenter();
         ClearExitCells();
-        generateExtraLife();
+        GenerateExtraLife();
         
 
     }
@@ -201,7 +209,7 @@ public class MapGenerator : MonoBehaviour
 
 
 
-    private void generateExtraLife()
+    private void GenerateExtraLife()
     {
         int probHearth = Random.Range(1, 100);
         int minimum = 0;
@@ -225,10 +233,9 @@ public class MapGenerator : MonoBehaviour
             GameObject hearth = Instantiate(hearthObject, new Vector3(ArrOfPlanes[widthValue, heightValue].transform.position.x,
                 10,ArrOfPlanes[widthValue,heightValue].transform.position.z), hearthObject.transform.rotation);
             hearth.transform.localScale = new Vector3(175f, 175f, 175f);
-            //_livesObjects.Add(hearth);
             
-            Debug.Log("jeje");
+            PositionHearths.Add(new []{widthValue, heightValue});
+            _livesObjects.Add(hearth);
         }
-        
     }
 }
