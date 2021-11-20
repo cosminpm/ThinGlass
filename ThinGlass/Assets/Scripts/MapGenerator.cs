@@ -225,7 +225,9 @@ public class MapGenerator : MonoBehaviour
             GameObject hearth = Instantiate(hearthObject, new Vector3(ArrOfPlanes[widthValue, heightValue].transform.position.x,
                 10,ArrOfPlanes[widthValue,heightValue].transform.position.z), hearthObject.transform.rotation);
             hearth.transform.localScale = new Vector3(175f, 175f, 175f);
-            _livesObjects.Add(hearth);
+            //_livesObjects.Add(hearth);
+            
+            Debug.Log("jeje");
         }
         
     }
