@@ -51,6 +51,7 @@ public class MapGenerator : MonoBehaviour
         _mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         levelText.text = level.ToString();
         pointsNeededText.text = pointsNeeded.ToString();
+        EditCamera();
     }
 
     // Update is called once per frame
@@ -197,10 +198,26 @@ public class MapGenerator : MonoBehaviour
             Destroy(h);
         }
 
+        foreach (var h in startHearthsObjects)
+        {
+            Destroy(h);
+        }
         hearthsObjects.Clear();
         positionHearths.Clear();
         startHearthsObjects.Clear();
         startHearthsPosition.Clear();
+    }
+
+    private void EditCamera()
+    {
+
+        _mainCamera.orthographicSize = (widthPlane * width + heightPlane * height) / 2.5f;
+
+        Vector3 centerGrid = Vector3.Lerp(ArrOfPlanes[0, 0].transform.position, ArrOfPlanes[width - 1, height - 1].transform.position, 0.5f);
+        Vector3 centerCamera = new Vector3(ArrOfPlanes[center[0], center[1]].transform.position.x, 140,
+            ArrOfPlanes[center[0], center[1]].transform.position.z);
+
+        _mainCamera.transform.position = new Vector3(centerGrid.x, 140, centerGrid.z);
     }
 
     public void GenerateNextLevel()
@@ -220,10 +237,9 @@ public class MapGenerator : MonoBehaviour
         GenerateMap();
         pointsNeeded = (height * width / 3) + _scriptPlayer.totalScore - 1;
         pointsNeededText.text = pointsNeeded.ToString();
-        var transform1 = _mainCamera.transform;
-        var position = transform1.position;
-        position = new Vector3(position.x + 5.5f, position.y + 100, position.z + 6.5f);
-        transform1.position = position;
+
+        EditCamera();
+
         _scriptPlayer.ResetMap();
         level += 1;
         levelText.text = level.ToString();
