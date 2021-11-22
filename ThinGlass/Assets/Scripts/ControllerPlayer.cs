@@ -88,7 +88,7 @@ public class ControllerPlayer : MonoBehaviour
             MoveCube(x, z);
             
             
-            _getHearth(x, z);
+            _getHearth(_actualPosition[0], _actualPosition[1]);
             // If winner goes to exit and finishes
             if (CheckIfExit(_actualPosition[0], _actualPosition[1]))
             {
@@ -243,7 +243,6 @@ public class ControllerPlayer : MonoBehaviour
                     _score += 10;
                 }
                 _scriptMap.livesObjects[index].SetActive(false);
-                
             }
             index += 1;
         }
