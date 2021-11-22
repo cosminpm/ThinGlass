@@ -60,6 +60,7 @@ public class MapGenerator : MonoBehaviour
 
     private void _rotateHearth()
     {
+        
         foreach (var h in livesObjects)
         {
             h.transform.Rotate(0, Time.deltaTime * 100f, 0, Space.Self);

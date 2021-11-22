@@ -225,7 +225,7 @@ public class ControllerPlayer : MonoBehaviour
     private void _getHearth(int x, int z)
     {
         int index = 0;
-       
+        List<int> hearthsToRemove = new List<int>();
         foreach (var pos in _scriptMap.PositionHearths)
         {
             Debug.Log("A: "+ pos[0] + " " + x);
@@ -242,10 +242,21 @@ public class ControllerPlayer : MonoBehaviour
                 {
                     _score += 10;
                 }
+                
+                
                 _scriptMap.livesObjects[index].SetActive(false);
+                Destroy(_scriptMap.livesObjects[index]);
+                _scriptMap.livesObjects.RemoveAt(index);
+                hearthsToRemove.Add(index);
             }
             index += 1;
         }
+
+        foreach (var i in hearthsToRemove)
+        {
+            _scriptMap.PositionHearths.RemoveAt(i);
+        }
+        
     }
     
 }
