@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,19 +12,14 @@ public class MapGenerator : MonoBehaviour
     // Start is called before the first frame update
     public int width;
     public int height;
-    
+
     public GameObject[,] ArrOfPlanes;
-    [HideInInspector]
-    public float scaler = 0.15f;
-    
-    [HideInInspector]
-    public float widthPlane;
-    [HideInInspector]
-    public float heightPlane;
-    [HideInInspector]
-    public bool isInitialized;
-    [HideInInspector]
-    public int[] exitCoor;
+    [HideInInspector] public float scaler = 0.15f;
+
+    [HideInInspector] public float widthPlane;
+    [HideInInspector] public float heightPlane;
+    [HideInInspector] public bool isInitialized;
+    [HideInInspector] public int[] exitCoor;
     private ControllerPlayer _scriptPlayer;
     private Camera _mainCamera;
     public int[] center;
@@ -32,15 +28,21 @@ public class MapGenerator : MonoBehaviour
     public int pointsNeeded;
     public Text pointsNeededText;
     public GameObject hearthObject;
-    
-    public List<GameObject> livesObjects;
-    public List<int[]> PositionHearths;
-    
+
+    public List<GameObject> hearthsObjects;
+    public List<int[]> positionHearths;
+
+    public List<GameObject> startHearthsObjects;
+    public List<int[]> startHearthsPosition;
+
+
     void Start()
     {
-        PositionHearths = new List<int[]>();
-        livesObjects = new List<GameObject>();
-        
+        positionHearths = new List<int[]>();
+        hearthsObjects = new List<GameObject>();
+        startHearthsObjects = new List<GameObject>();
+        startHearthsPosition = new List<int[]>();
+
         GenerateMap();
         _generateExit();
         level = 0;
@@ -49,7 +51,6 @@ public class MapGenerator : MonoBehaviour
         _mainCamera = GameObject.Find("Main Camera").GetComponent<Camera>();
         levelText.text = level.ToString();
         pointsNeededText.text = pointsNeeded.ToString();
-        
     }
 
     // Update is called once per frame
@@ -60,14 +61,13 @@ public class MapGenerator : MonoBehaviour
 
     private void _rotateHearth()
     {
-        
-        foreach (var h in livesObjects)
+        foreach (var h in hearthsObjects)
         {
             h.transform.Rotate(0, Time.deltaTime * 100f, 0, Space.Self);
         }
     }
-    
-    
+
+
     public void GenerateMap()
     {
         pointsNeeded = height * width / 3;
@@ -91,7 +91,7 @@ public class MapGenerator : MonoBehaviour
                 ArrOfPlanes[i, j].gameObject.transform.SetParent(gameObject.transform);
                 ArrOfPlanes[i, j].gameObject.transform.localScale = new Vector3(1, 1, 1);
                 ArrOfPlanes[i, j].gameObject.transform.localPosition = new Vector3(positionX, 0, positionZ);
-                ArrOfPlanes[i, j].GetComponent<Renderer>().material.color = new Color(255, 255, 255); 
+                ArrOfPlanes[i, j].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
             }
             // The ones you cant touch, if you touch them you die
             else
@@ -107,10 +107,11 @@ public class MapGenerator : MonoBehaviour
         center = GetCenter();
         ClearExitCells();
         GenerateExtraLife();
-        
 
+        startHearthsObjects = new List<GameObject>(hearthsObjects);
+        startHearthsPosition = new List<int[]>(positionHearths);
     }
-    
+
     // Return the size of a plane given the scale of x and z
     private float[] _getSizeOfPlane(float x, float z)
     {
@@ -121,12 +122,12 @@ public class MapGenerator : MonoBehaviour
         Destroy(aux);
         return new[] {widthAux, heightAux};
     }
-    
+
     // Get the distanced squared from the center, this function is used to make a map
     private float distance_squared(float x, float y)
     {
-        float dx = 2 * x / (width*_getSizeOfPlane(1f, 1f)[0]) - 1;
-        float dy = 2 * y / (height*_getSizeOfPlane(1f, 1f)[1]) - 1;
+        float dx = 2 * x / (width * _getSizeOfPlane(1f, 1f)[0]) - 1;
+        float dy = 2 * y / (height * _getSizeOfPlane(1f, 1f)[1]) - 1;
         //at this point 0 <= dx <= 1 and 0 <= dy <= 1
         return dx * dx + dy * dy;
     }
@@ -138,77 +139,96 @@ public class MapGenerator : MonoBehaviour
     {
         int widthExit = Random.Range(2, width - 2);
         int heightExit = Random.Range(2, height - 2);
-        
-        while ((widthExit == center[0] && heightExit == center[1]) || 
+
+        while ((widthExit == center[0] && heightExit == center[1]) ||
                (widthExit == center[0] + 1 && heightExit == center[1]) ||
-               (widthExit == center[0] - 1 && heightExit == center[1]) || 
-               (widthExit == center[0] && heightExit == center[1] + 1) || 
+               (widthExit == center[0] - 1 && heightExit == center[1]) ||
+               (widthExit == center[0] && heightExit == center[1] + 1) ||
                (widthExit == center[0] && heightExit == center[1] - 1))
         {
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
         }
-        exitCoor = new[] {widthExit, heightExit}; 
+
+        exitCoor = new[] {widthExit, heightExit};
         ArrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
     }
 
     // Clears the four up, down, left, and right squares from the start position
     private void ClearExitCells()
-    { ;
+    {
+        ;
         ArrOfPlanes[center[0] + 1, center[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
-        ArrOfPlanes[center[0] - 1,center[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
+        ArrOfPlanes[center[0] - 1, center[1]].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
         ArrOfPlanes[center[0], center[1] + 1].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
         ArrOfPlanes[center[0], center[1] - 1].GetComponent<Renderer>().material.color = new Color(255, 255, 255);
     }
-    
+
     public int[] GetCenter()
     {
         int[] auxCenter = {height / 2, width / 2};
         int[] originalCenter = auxCenter;
 
-        for (int i = 0; i < width/2; i++)
+        for (int i = 0; i < width / 2; i++)
         {
-            for (int j = 0; j < height/2; j++)
+            for (int j = 0; j < height / 2; j++)
             {
                 if (ArrOfPlanes[auxCenter[0], auxCenter[1]])
                 {
                     return auxCenter;
                 }
+
                 auxCenter[0] = originalCenter[0] + j;
             }
+
             auxCenter[0] = originalCenter[0];
             auxCenter[1] = originalCenter[1] + i;
         }
+
         throw new Exception("No center found in the map created");
     }
-    
-    
+
+
+    public void ResetHearthsToEmpty()
+    {
+        // Empty previous list of hearths
+        foreach (var h in hearthsObjects)
+        {
+            Destroy(h);
+        }
+
+        hearthsObjects.Clear();
+        positionHearths.Clear();
+        startHearthsObjects.Clear();
+        startHearthsPosition.Clear();
+    }
+
     public void GenerateNextLevel()
     {
+        ResetHearthsToEmpty();
 
         foreach (Transform panel in transform)
         {
             if (panel.name == "Plane")
                 Destroy(panel.gameObject);
         }
-        
+
         height += 1;
         width += 1;
-        
+
         scaler = Random.Range(0.01f, 0.99f);
         GenerateMap();
         pointsNeeded = (height * width / 3) + _scriptPlayer.totalScore - 1;
         pointsNeededText.text = pointsNeeded.ToString();
         var transform1 = _mainCamera.transform;
         var position = transform1.position;
-        position = new Vector3(position.x+5.5f, position.y + 100, position.z+6.5f);
+        position = new Vector3(position.x + 5.5f, position.y + 100, position.z + 6.5f);
         transform1.position = position;
         _scriptPlayer.ResetMap();
         level += 1;
         levelText.text = level.ToString();
         _generateExit();
     }
-
 
 
     private void GenerateExtraLife()
@@ -220,24 +240,26 @@ public class MapGenerator : MonoBehaviour
         {
             int widthValue = Random.Range(2, width - 2);
             int heightValue = Random.Range(2, height - 2);
-        
-            while ((widthValue == center[0] && heightValue == center[1]) || 
-                   (widthValue == center[0] + 1 && heightValue == center[1]) ||
-                   (widthValue == center[0] - 1 && heightValue == center[1]) || 
-                   (widthValue == center[0] && heightValue == center[1] + 1) || 
-                   (widthValue == center[0] && heightValue == center[1] - 1) &&
-                    ArrOfPlanes[widthValue, heightValue].GetComponent<Renderer>().material.color.Equals(new Color(255,255,255)))
+
+            while ((widthValue == center[0] && heightValue == center[1] ||
+                    widthValue == center[0] + 1 && heightValue == center[1] ||
+                    widthValue == center[0] - 1 && heightValue == center[1] ||
+                    widthValue == center[0] && heightValue == center[1] + 1 ||
+                    widthValue == center[0] && heightValue == center[1] - 1) ||
+                   !ArrOfPlanes[widthValue, heightValue].GetComponent<Renderer>().material.color
+                       .Equals(new Color(255, 255, 255)))
             {
                 widthValue = Random.Range(2, width - 2);
                 heightValue = Random.Range(2, height - 2);
             }
-            
-            GameObject hearth = Instantiate(hearthObject, new Vector3(ArrOfPlanes[widthValue, heightValue].transform.position.x,
-                10,ArrOfPlanes[widthValue,heightValue].transform.position.z), hearthObject.transform.rotation);
+
+            GameObject hearth = Instantiate(hearthObject, new Vector3(
+                ArrOfPlanes[widthValue, heightValue].transform.position.x,
+                10, ArrOfPlanes[widthValue, heightValue].transform.position.z), hearthObject.transform.rotation);
             hearth.transform.localScale = new Vector3(175f, 175f, 175f);
-            
-            PositionHearths.Add(new []{widthValue, heightValue});
-            livesObjects.Add(hearth);
+
+            positionHearths.Add(new[] {widthValue, heightValue});
+            hearthsObjects.Add(hearth);
         }
     }
 }
