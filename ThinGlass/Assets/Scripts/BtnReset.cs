@@ -20,11 +20,10 @@ public class BtnReset : MonoBehaviour
         }
 
         scriptMap.scaler = Random.Range(0.01f, 0.99f);
-        scriptMap.ResetHearthsToEmpty();
-        scriptMap.GenerateMap();
-        scriptPlayer.ResetMap();
+        //scriptMap.ResetHearthsToEmpty();
+        //criptMap.GenerateMap();
+        //scriptPlayer.ResetMap();
         scriptMap._generateExit();
-        
     }
     
 }
