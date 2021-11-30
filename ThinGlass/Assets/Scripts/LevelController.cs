@@ -19,21 +19,27 @@ public class LevelController : MonoBehaviour
 
     public AudioSource dieSound, winSound, byebyeSound;
     
-    void Start()
+    IEnumerator Start()
     {
         _heartManager = gameObject.GetComponent<HeartManager>();
         _map = GameObject.Find("Map");
         _mapGenerator =_map.GetComponent<MapGenerator>();
         _controllerPlayer = GameObject.Find("Player").GetComponent<ControllerPlayer>();
         _cameraManager = GameObject.Find("CameraManager").GetComponent<CameraManager>();
+        
         // Updates of the others methods can start
+        yield return new WaitUntil(() => _heartManager.isInitialized);
+        yield return new WaitUntil(() => _controllerPlayer.isInitialized);
+        yield return new WaitUntil(() => _cameraManager.isInitialized);
+        yield return new WaitUntil(() => _mapGenerator.isInitialized);
         GenerateLevel();
+        _youDiedText.enabled = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-       //PlayerMoves();
+       PlayerMoves();
     }
 
     private void PlayerMoves()
@@ -44,7 +50,6 @@ public class LevelController : MonoBehaviour
         if (previousPosition[0] != _mapGenerator.center[0] && previousPosition[1] != _mapGenerator.center[1])
         {
             _mapGenerator.BreakPanel(previousPosition);
-        
             // Moves player
             int[] position = _controllerPlayer.MovePlayer(_mapGenerator.arrOfPlanes);
         
