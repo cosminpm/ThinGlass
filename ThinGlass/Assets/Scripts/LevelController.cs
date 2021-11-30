@@ -11,7 +11,7 @@ public class LevelController : MonoBehaviour
     private ControllerPlayer _controllerPlayer;
     private CameraManager _cameraManager;
     private GameObject _map;
-    private int _pointsNeeded, _level, _scoreActualLevel, _totalScore;
+    private int _pointsNeeded, _level, _scoreActualLevel;
     public Text _scoreText, _pointsNeededText, _levelText, _youDiedText;
 
     private Color badBoxesColor = new Color(255, 0, 0);
@@ -33,7 +33,7 @@ public class LevelController : MonoBehaviour
         GenerateLevel();
         yield return new WaitUntil(() => _mapGenerator.isInitialized);
         yield return new WaitUntil(() => _controllerPlayer.isInitialized);
-        
+
         _controllerPlayer.SetPosition(_mapGenerator.GetCenterVector3(), _mapGenerator.GetCenter());
         _youDiedText.enabled = false;
     }
@@ -51,32 +51,44 @@ public class LevelController : MonoBehaviour
         _mapGenerator.BreakPanel(previousPosition);
         int[] actualPosition = _controllerPlayer.MovePlayer();
         // Moves the player to that direction
-       
+
         if (previousPosition[0] != actualPosition[0] || previousPosition[1] != actualPosition[1])
         {
+            if (CheckIfFinish(actualPosition))
+            {
+                GenerateNextLevel();
+            }
+            
             if (!CheckIfBadMove(actualPosition))
             {
                 // Moves the player if everything is correct
                 _controllerPlayer.SetPosition(_mapGenerator.GetCenterOfPanel(actualPosition), actualPosition);
-                // _heartManager.GetHearth(actualPosition);
-                if (CheckIfFinish(actualPosition))
+                IncrActualLvlScore(1);
+                
+                if(_heartManager.GetHearth(actualPosition) && _heartManager.CheckIfPlayerAllHearts())
                 {
-                     GenerateNextLevel();
+                    IncrActualLvlScore(10);
                 }
             }
+            
             else
             {
                 // Removes the last glass stepped so it does not count as white box
                 _controllerPlayer.glassStepped.RemoveAt(_controllerPlayer.glassStepped.Count - 1);
-                
                 DecreaseLives();
             }
         }
     }
 
+    private void IncrActualLvlScore(int score)
+    {
+        _scoreActualLevel += score;
+        _scoreText.text = _scoreActualLevel.ToString();
+    }
+
     private bool CheckIfBadMove(int[] position)
     {
-        if (_mapGenerator.GetColorPanel(position).Equals(badBoxesColor) || CheckOutsideMap(position))
+        if (CheckOutsideMap(position) || !_mapGenerator.GetColorPanel(position).Equals(goodBoxesColor))
         {
             return true;
         }
@@ -92,7 +104,7 @@ public class LevelController : MonoBehaviour
         }
 
         _heartManager.DecreaseLive();
-      
+
 
         if (_heartManager.CheckIfAllLivesGone())
         {
@@ -103,7 +115,6 @@ public class LevelController : MonoBehaviour
 
             _youDiedText.enabled = true;
             _map.SetActive(false);
-            //resetButton.gameObject.SetActive(false);
         }
     }
 
@@ -116,8 +127,12 @@ public class LevelController : MonoBehaviour
 
         RelocateToMap();
         IncreasePointsNeeded();
+
+        Vector3 centerOfCamera = Vector3.Lerp(_mapGenerator.arrOfPlanes[0, 0].transform.position,
+            _mapGenerator.arrOfPlanes[_mapGenerator.width - 1, _mapGenerator.height - 1].transform.position, 0.5f);
+        
         _cameraManager.EditCamera(_mapGenerator.width, _mapGenerator.height, _mapGenerator.widthPlane,
-            _mapGenerator.heightPlane, _mapGenerator.GetCenterVector3());
+            _mapGenerator.heightPlane, centerOfCamera);
     }
 
     public void GenerateNextLevel()
@@ -125,7 +140,6 @@ public class LevelController : MonoBehaviour
         // Destroys Previous Level
         _mapGenerator.DestroyMap();
         _heartManager.DestroyHearts();
-
         GenerateLevel();
     }
 
@@ -133,7 +147,7 @@ public class LevelController : MonoBehaviour
     {
         int height = _mapGenerator.height;
         int width = _mapGenerator.width;
-        _pointsNeeded = (height * width / 3) + _totalScore - 1;
+        _pointsNeeded = (height * width / 3);
 
         _pointsNeededText.text = _pointsNeeded.ToString();
         _level += 1;
@@ -148,13 +162,15 @@ public class LevelController : MonoBehaviour
         _mapGenerator.SetPanelsToColor(_controllerPlayer.glassStepped, goodBoxesColor);
 
         _scoreActualLevel = 0;
-        _scoreText.text = _totalScore.ToString();
+        _scoreText.text = "0";
+        _heartManager.ResetHearthsLevel();
     }
 
 
     // Check if the player arrived to the exit
     private bool CheckIfExit(int[] playerPosition)
     {
+
         if (playerPosition[0] == _mapGenerator.exitCoor[0] && playerPosition[1] == _mapGenerator.exitCoor[1])
             return true;
         return false;
@@ -162,11 +178,11 @@ public class LevelController : MonoBehaviour
 
     private bool CheckIfFinish(int[] playerPosition)
     {
-        if (_scoreActualLevel > _pointsNeeded && CheckIfExit(playerPosition))
+        if (_scoreActualLevel >= _pointsNeeded && CheckIfExit(playerPosition))
         {
             return true;
         }
-
+        
         return false;
     }
 
@@ -177,7 +193,6 @@ public class LevelController : MonoBehaviour
         {
             return true;
         }
-
         return false;
     }
 }

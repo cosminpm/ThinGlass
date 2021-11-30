@@ -7,33 +7,45 @@ public class HeartManager : MonoBehaviour
 {
     // Start is called before the first frame update
     public GameObject hearthObject;
-    public List<GameObject> hearthsObjects, startHearthsObjects;
-    public List<int[]> positionHearths, startHearthsPosition;
+    public List<GameObject> heartsObjects, startHearthsObjects;
+    public List<int[]> positionHearts, startHeartsPosition;
     private int minProbHearth, _livesAvaiable;
     public List<RawImage> hearthsImages;
     public AudioSource takeHearthSound;
-    private List<int[]> positionHearts;
     public bool isInitialized;
     
     public void Start()
     {
-        positionHearths = new List<int[]>();
-        startHearthsPosition = new List<int[]>();
-        hearthsObjects = new List<GameObject>();
+        positionHearts = new List<int[]>();
+        startHeartsPosition = new List<int[]>();
+        heartsObjects = new List<GameObject>();
         startHearthsObjects = new List<GameObject>();
 
-        minProbHearth = 50;
+        minProbHearth = 0;
         _livesAvaiable = 3;
         isInitialized = true;
     }
 
-    public void GetHearth(int[] playerPosition)
+    public void ResetHearthsLevel()
+    {
+        positionHearts = new List<int[]>(startHeartsPosition);
+        heartsObjects = new List<GameObject>(startHearthsObjects);
+        foreach (var heart in heartsObjects)
+        {
+            heart.SetActive(true);
+        }
+        
+    }
+    
+    public bool GetHearth(int[] playerPosition)
     {
         int index = 0;
+        bool heartGot = false;
+        
         List<int> hearthsToRemove = new List<int>();
-        foreach (var pos in positionHearts)
+        foreach (var posHeart in positionHearts)
         {
-            if (pos[0] == playerPosition[0] && pos[1] == playerPosition[1])
+            if (posHeart[0] == playerPosition[0] && posHeart[1] == playerPosition[1])
             {
                 if (!takeHearthSound.isPlaying)
                 {
@@ -46,9 +58,10 @@ public class HeartManager : MonoBehaviour
                     hearthsImages[_livesAvaiable - 1].enabled = true;
                 }
 
-                hearthsObjects[index].SetActive(false);
-                hearthsObjects.RemoveAt(index);
+                heartsObjects[index].SetActive(false);
+                heartsObjects.RemoveAt(index);
                 hearthsToRemove.Add(index);
+                heartGot = true;
             }
 
             index += 1;
@@ -56,8 +69,15 @@ public class HeartManager : MonoBehaviour
 
         foreach (var i in hearthsToRemove)
         {
-            positionHearths.RemoveAt(i);
+            positionHearts.RemoveAt(i);
         }
+
+        return heartGot;
+    }
+
+    public bool CheckIfPlayerAllHearts()
+    {
+        return _livesAvaiable == 3;
     }
 
     // Update is called once per frame
@@ -68,21 +88,21 @@ public class HeartManager : MonoBehaviour
 
     private void _rotateHearth()
     {
-        foreach (var h in hearthsObjects)
+        foreach (var h in heartsObjects)
         {
             h.transform.Rotate(0, Time.deltaTime * 100f, 0, Space.Self);
         }
     }
 
     /*
-     * ReserHearthsToEmpty
+     * ResetHearthsToEmpty
      * When a new level appears, we destroy all hearths, and a new level should start.
      */
 
     public void DestroyHearts()
     {
         // Empty previous list of hearths
-        foreach (var h in hearthsObjects)
+        foreach (var h in heartsObjects)
         {
             Destroy(h);
         }
@@ -92,10 +112,10 @@ public class HeartManager : MonoBehaviour
             Destroy(h);
         }
 
-        hearthsObjects.Clear();
-        positionHearths.Clear();
+        heartsObjects.Clear();
+        positionHearts.Clear();
         startHearthsObjects.Clear();
-        startHearthsPosition.Clear();
+        startHeartsPosition.Clear();
     }
 
 
@@ -135,19 +155,22 @@ public class HeartManager : MonoBehaviour
                 10, map.arrOfPlanes[widthValue, heightValue].transform.position.z), hearthObject.transform.rotation);
             hearth.transform.localScale = new Vector3(175f, 175f, 175f);
 
-            positionHearths.Add(new[] {widthValue, heightValue});
-            hearthsObjects.Add(hearth);
+            positionHearts.Add(new[] {widthValue, heightValue});
+            heartsObjects.Add(hearth);
         }
+
+        startHearthsObjects = new List<GameObject>(heartsObjects);
+        startHeartsPosition = new List<int[]>(positionHearts);
     }
 
     public void DecreaseLive()
     {
         hearthsImages[_livesAvaiable - 1].enabled = false;
         _livesAvaiable -= 1;
-        hearthsObjects = new List<GameObject>(startHearthsObjects);
-        positionHearths = new List<int[]>(startHearthsPosition);
+        heartsObjects = new List<GameObject>(startHearthsObjects);
+        positionHearts = new List<int[]>(startHeartsPosition);
 
-        foreach (var h in hearthsObjects)
+        foreach (var h in heartsObjects)
         {
             h.SetActive(true);
         }

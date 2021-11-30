@@ -54,8 +54,9 @@ public class MapGenerator : MonoBehaviour
         }
 
         center = GetCenter();
-        _generateExit();
+        
         ClearExitCells();
+        _generateExit();
         isInitialized = true;
     }
 
@@ -87,17 +88,16 @@ public class MapGenerator : MonoBehaviour
         int widthExit = Random.Range(2, width - 2);
         int heightExit = Random.Range(2, height - 2);
 
-        while ((widthExit == center[0] && heightExit == center[1]) ||
-               (widthExit == center[0] + 1 && heightExit == center[1]) ||
-               (widthExit == center[0] - 1 && heightExit == center[1]) ||
-               (widthExit == center[0] && heightExit == center[1] + 1) ||
-               (widthExit == center[0] && heightExit == center[1] - 1))
+        while (widthExit == center[0] && heightExit == center[1])
         {
             widthExit = Random.Range(2, width - 2);
             heightExit = Random.Range(2, height - 2);
         }
 
         exitCoor = new[] {widthExit, heightExit};
+        Debug.Log(widthExit + " " + center[0]);
+        Debug.Log(heightExit + " " + center[1]);
+        
         arrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
     }
 
