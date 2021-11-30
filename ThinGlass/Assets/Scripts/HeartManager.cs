@@ -13,8 +13,9 @@ public class HeartManager : MonoBehaviour
     public List<RawImage> hearthsImages;
     public AudioSource takeHearthSound;
     private List<int[]> positionHearts;
-
-    void Awake()
+    public bool isInitialized;
+    
+    public void Start()
     {
         positionHearths = new List<int[]>();
         startHearthsPosition = new List<int[]>();
@@ -23,6 +24,7 @@ public class HeartManager : MonoBehaviour
 
         minProbHearth = 50;
         _livesAvaiable = 3;
+        isInitialized = true;
     }
 
     public void GetHearth(int[] playerPosition)

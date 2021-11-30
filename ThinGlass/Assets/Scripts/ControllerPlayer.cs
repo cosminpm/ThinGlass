@@ -10,52 +10,57 @@ public class ControllerPlayer : MonoBehaviour
 {
     private int[] _actualPosition;
     public List<int[]> glassStepped;
+    public bool isInitialized;
 
-    void Awake()
+    void Start()
     {
         // To initializate the blocks the player stepped on
         glassStepped = new List<int[]>();
-        _actualPosition = new []{0,0};
+        _actualPosition = new[] {0, 0};
+        isInitialized = true;
     }
-
-    private void Update()
+    
+    public int[] MovePlayer()
     {
-        //throw new NotImplementedException();
-    }
-
-    public int[] MovePlayer(GameObject[,] map)
-    {
-        int x = 0;
-        int z = 0;
+        int x, z;
         if (Input.GetKeyDown("up"))
         {
             x = -1;
             z = 0;
+            ActionsInput(x,z);
         }
 
         if (Input.GetKeyDown("down"))
         {
             x = 1;
             z = 0;
+            ActionsInput(x,z);
         }
 
         if (Input.GetKeyDown("left"))
         {
             x = 0;
             z = -1;
+            ActionsInput(x,z);
         }
 
         if (Input.GetKeyDown("right"))
         {
             x = 0;
             z = 1;
+            ActionsInput(x,z);
         }
 
-        MoveCube(x, z, map);
+        
+        return _actualPosition;
+    }
+
+    private void ActionsInput(int x, int z)
+    {
         _actualPosition[0] += x;
         _actualPosition[1] += z;
-
-        return _actualPosition;
+        
+        glassStepped.Add((int[])_actualPosition.Clone());
     }
 
     public int[] GetActualPosition()
@@ -63,16 +68,10 @@ public class ControllerPlayer : MonoBehaviour
         return _actualPosition;
     }
 
-    private void MoveCube(int x, int z, GameObject[,] map)
+    public void SetPosition(Vector3 position, int[] coor)
     {
-        _actualPosition = new[] {_actualPosition[0] + x, _actualPosition[1] + z};
-        gameObject.transform.localPosition =
-            new Vector3(map[_actualPosition[0], _actualPosition[1]].transform.localPosition.x,
-                5, map[_actualPosition[0], _actualPosition[1]].transform.localPosition.z);
-    }
-
-    public void SetPosition(Vector3 position)
-    {
+        _actualPosition[0] = coor[0];
+        _actualPosition[1] = coor[1];
         gameObject.transform.position = position;
     }
 }

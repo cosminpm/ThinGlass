@@ -12,11 +12,11 @@ public class MapGenerator : MonoBehaviour
 
     public GameObject[,] arrOfPlanes;
     [HideInInspector] public float scaler = 0.15f;
-
     [HideInInspector] public float widthPlane, heightPlane;
     [HideInInspector] public int[] exitCoor;
     public int[] center;
-
+    public bool isInitialized;
+    
     public void GenerateMap(Color badBoxesColor, Color goodBoxesColor)
     {
         arrOfPlanes = new GameObject[width, height];
@@ -41,6 +41,7 @@ public class MapGenerator : MonoBehaviour
                 arrOfPlanes[i, j].gameObject.transform.localPosition = new Vector3(positionX, 0, positionZ);
                 arrOfPlanes[i, j].GetComponent<Renderer>().material.color = goodBoxesColor;
             }
+            
             // The ones you cant touch, if you touch them you die
             else
             {
@@ -53,7 +54,9 @@ public class MapGenerator : MonoBehaviour
         }
 
         center = GetCenter();
+        _generateExit();
         ClearExitCells();
+        isInitialized = true;
     }
 
     // Return the size of a plane given the scale of x and z
@@ -133,7 +136,12 @@ public class MapGenerator : MonoBehaviour
 
     public Vector3 GetCenterVector3()
     {
-        return arrOfPlanes[center[0], center[1]].transform.position;
+        return GetCenterOfPanel(center);
+    }
+
+    public Vector3 GetCenterOfPanel(int[] pos)
+    {
+        return arrOfPlanes[pos[0], pos[1]].transform.position;
     }
 
     public void SetPanelsToColor(List<int[]> panels, Color color)
