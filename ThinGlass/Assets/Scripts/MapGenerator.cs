@@ -52,9 +52,8 @@ public class MapGenerator : MonoBehaviour
                 arrOfPlanes[i, j].gameObject.transform.localPosition = new Vector3(positionX, 0, positionZ);
             }
         }
-
-        center = GetCenter();
         
+        center = GetCenter();
         ClearExitCells();
         _generateExit();
         isInitialized = true;
@@ -95,9 +94,6 @@ public class MapGenerator : MonoBehaviour
         }
 
         exitCoor = new[] {widthExit, heightExit};
-        Debug.Log(widthExit + " " + center[0]);
-        Debug.Log(heightExit + " " + center[1]);
-        
         arrOfPlanes[widthExit, heightExit].GetComponent<Renderer>().material.color = new Color(0, 255, 0);
     }
 
@@ -179,5 +175,21 @@ public class MapGenerator : MonoBehaviour
     {
         arrOfPlanes[position[0], position[1]].GetComponent<Renderer>().material.color = new Color(255, 0, 0);
     }
-    
+
+    public List<int[]> GetAllWhiteBoxes()
+    {
+        List<int[]> whiteBoxes = new List<int[]>();
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (arrOfPlanes[i, j].GetComponent<Renderer>().material.color.Equals(new Color(255, 0, 0)))
+                {
+                    whiteBoxes.Add(new []{i,j});
+                }
+            }
+        }
+
+        return whiteBoxes;
+    }
 }
